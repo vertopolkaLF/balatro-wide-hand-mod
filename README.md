@@ -15,11 +15,15 @@ Nothing changes while the cards still fit normally. The mod only kicks in when c
 
 ## Screenshots
 
-| Without hovering | Hovering the hand |
+| Without the mod: 50 cards in hand | Widen area |
 |---|---|
-| ![50 cards in hand, crowded](docs/screenshots/before.webp) | ![Hand widened across the screen with a gap at the cursor](docs/screenshots/hand.webp) |
+| ![50 cards in hand, crowded into an unreadable pile](docs/screenshots/before.webp) | ![Hand stretched across the screen, evenly spaced](docs/screenshots/widen.webp) |
 
-| Hovering the jokers | Settings |
+| Shift cards | Both (default) |
+|---|---|
+| ![Hand keeps its width, cards around the cursor move apart](docs/screenshots/shift.webp) | ![Hand stretched across the screen with a gap around the card under the cursor](docs/screenshots/both.webp) |
+
+| Works for jokers and consumables too | Settings |
 |---|---|
 | ![20 jokers widened across the screen](docs/screenshots/jokers.webp) | ![Wide Hand config tab](docs/screenshots/config.webp) |
 
