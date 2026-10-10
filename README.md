@@ -1,6 +1,6 @@
 <img src="icon.png" width="128" align="right" alt="Wide Hand icon">
 
-## Wide Hand
+# Wide Hand
 
 A [Balatro](https://www.playbalatro.com/) mod for when you have way too many cards.
 
