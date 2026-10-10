@@ -1,0 +1,12 @@
+{
+	"id": "WideHand",
+	"name": "Wide Hand",
+	"display_name": "Wide Hand",
+	"author": ["vertopolkaLF"],
+	"description": "Overcrowded hand, jokers or consumables? Hover them to spread the cards wider (over the rest of the UI) and open a gap around the card under the cursor.",
+	"prefix": "widehand",
+	"main_file": "main.lua",
+	"priority": 0,
+	"version": "0.1.0",
+	"dependencies": ["Steamodded (>=1.0.0~BETA)"]
+}

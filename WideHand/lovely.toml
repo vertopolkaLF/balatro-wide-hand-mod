@@ -1,0 +1,15 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Draw the expanded hand after every other CardArea so it sits on top of
+# the deck, jokers, etc. (UIBoxes are already drawn before CardAreas).
+# Being last in the draw hash also gives its cards hover priority.
+[[patches]]
+[patches.pattern]
+target = 'game.lua'
+pattern = "for k, v in pairs(self.I.CARD) do"
+position = 'before'
+match_indent = true
+payload = "if WideHand and WideHand.draw_on_top then WideHand.draw_on_top() end"

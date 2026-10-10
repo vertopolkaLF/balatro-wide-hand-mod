@@ -1,0 +1,61 @@
+# Creates a GitHub release whenever the version in WideHand/metadata.json changes.
+# Bump "version" there and push to main; the release (tag v<version> + zip) is made automatically.
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'WideHand/**'
+      - '.github/workflows/release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version
+        id: meta
+        run: |
+          version=$(jq -r '.version' WideHand/metadata.json)
+          if [ -z "$version" ] || [ "$version" = "null" ]; then
+            echo "No version in WideHand/metadata.json" >&2
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Check if release exists
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.meta.outputs.tag }}" >/dev/null 2>&1; then
+            echo "Release ${{ steps.meta.outputs.tag }} already exists, skipping."
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Package mod
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          zip -r "WideHand-${{ steps.meta.outputs.tag }}.zip" WideHand
+
+      - name: Create release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.meta.outputs.tag }}" \
+            "WideHand-${{ steps.meta.outputs.tag }}.zip" \
+            --target "${{ github.sha }}" \
+            --title "Wide Hand ${{ steps.meta.outputs.tag }}" \
+            --generate-notes
