@@ -1,3 +1,5 @@
+<img src="icon.png" width="128" align="right" alt="Wide Hand icon">
+
 # Wide Hand
 
 A [Balatro](https://www.playbalatro.com/) mod for when you have way too many cards.
@@ -10,6 +12,16 @@ When your hand, jokers or consumables are so crowded that the cards overlap into
 Move the cursor away and everything slides back. Dragging cards to reorder works against the widened layout.
 
 Nothing changes while the cards still fit normally. The mod only kicks in when cards are spaced less than half a card width apart.
+
+## Screenshots
+
+| Without hovering | Hovering the hand |
+|---|---|
+| ![50 cards in hand, crowded](docs/screenshots/before.webp) | ![Hand widened across the screen with a gap at the cursor](docs/screenshots/hand.webp) |
+
+| Hovering the jokers | Settings |
+|---|---|
+| ![20 jokers widened across the screen](docs/screenshots/jokers.webp) | ![Wide Hand config tab](docs/screenshots/config.webp) |
 
 ## Settings
 

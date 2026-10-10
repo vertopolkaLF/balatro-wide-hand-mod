@@ -285,6 +285,11 @@ function WH.draw_on_top()
     end
 end
 
+-- Mod icon shown in the mods list
+if SMODS.Atlas then
+    SMODS.Atlas({key = 'modicon', path = 'icon.png', px = 34, py = 34})
+end
+
 -- Config tab (Mods -> Wide Hand -> Config)
 G.FUNCS.widehand_set_mode = function(args)
     WH.settings.mode = args.to_key
