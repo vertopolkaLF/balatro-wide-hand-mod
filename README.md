@@ -13,24 +13,6 @@ Move the cursor away and everything slides back. Dragging cards to reorder works
 
 Nothing changes while the cards still fit normally. The mod only kicks in when cards are spaced less than half a card width apart.
 
-## Screenshots
-
-| Without the mod: 50 cards in hand | Widen area |
-|---|---|
-| ![50 cards in hand, crowded into an unreadable pile](docs/screenshots/before.webp) | ![Hand stretched across the screen, evenly spaced](docs/screenshots/widen.webp) |
-
-| Shift cards | Both (default) |
-|---|---|
-| ![Hand keeps its width, cards around the cursor move apart](docs/screenshots/shift.webp) | ![Hand stretched across the screen with a gap around the card under the cursor](docs/screenshots/both.webp) |
-
-| Jokers | Consumables |
-|---|---|
-| ![20 jokers widened across the screen](docs/screenshots/jokers.webp) | ![Consumables widened over the joker row while a hand is being scored](docs/screenshots/consumables.webp) |
-
-| Settings |
-|---|
-| ![Wide Hand config tab](docs/screenshots/config.webp) |
-
 ## Settings
 
 **Mods → Wide Hand → Config**
@@ -52,9 +34,28 @@ Requires [Steamodded](https://github.com/Steamodded/smods) (1.0.0 beta or newer)
 
 Mouse only. The mod is disabled while using a gamepad.
 
-## Releasing
+## Screenshots
 
-Bump `version` in `WideHand/metadata.json` and push to `main`. GitHub Actions creates tag `v<version>` and a release with the zipped mod. If a release for that version already exists, nothing happens.
+### Without the mod: 50 cards in hand
+![50 cards in hand, crowded into an unreadable pile](docs/screenshots/before.webp)
+
+### Widen area
+![Hand stretched across the screen, evenly spaced](docs/screenshots/widen.webp)
+
+### Shift cards
+![Hand keeps its width, cards around the cursor move apart](docs/screenshots/shift.webp)
+
+### Both (default)
+![Hand stretched across the screen with a gap around the card under the cursor](docs/screenshots/both.webp)
+
+### Jokers
+![20 jokers widened across the screen](docs/screenshots/jokers.webp)
+
+### Consumables
+![Consumables widened over the joker row while a hand is being scored](docs/screenshots/consumables.webp)
+
+### Settings
+![Wide Hand config tab](docs/screenshots/config.webp)
 
 ## License
 
