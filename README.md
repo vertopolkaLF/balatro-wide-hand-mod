@@ -23,9 +23,13 @@ Nothing changes while the cards still fit normally. The mod only kicks in when c
 |---|---|
 | ![Hand keeps its width, cards around the cursor move apart](docs/screenshots/shift.webp) | ![Hand stretched across the screen with a gap around the card under the cursor](docs/screenshots/both.webp) |
 
-| Works for jokers and consumables too | Settings |
+| Jokers | Consumables |
 |---|---|
-| ![20 jokers widened across the screen](docs/screenshots/jokers.webp) | ![Wide Hand config tab](docs/screenshots/config.webp) |
+| ![20 jokers widened across the screen](docs/screenshots/jokers.webp) | ![Consumables widened over the joker row while a hand is being scored](docs/screenshots/consumables.webp) |
+
+| Settings |
+|---|
+| ![Wide Hand config tab](docs/screenshots/config.webp) |
 
 ## Settings
 

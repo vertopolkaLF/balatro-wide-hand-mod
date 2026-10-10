@@ -19,7 +19,7 @@ WH.cfg = {
     focus_gap    = 1.05,  -- gap right after the focused card (* card width); >= 1 shows the whole card
     focus_sigma  = 1.1,   -- how many neighbouring gaps share the extra room (gaussian sigma, in cards)
     min_gap      = 0.06,  -- never squeeze far-away cards closer than this (* card width)
-    hover_pad    = 0.35,  -- extra hover tolerance around the widened area
+    hover_pad    = 0.6,   -- extra hover tolerance around the widened area (and its buttons)
     backdrop_alpha = 0.45,
 }
 
@@ -66,6 +66,14 @@ local function can_activate(area, key)
     if not area.states.visible then return false end
     if key == 'hand' then
         if area.config.type ~= 'hand' or G.VIEWING_DECK then return false end
+        -- only while the player picks cards: not while a hand is played, scored or drawn
+        local s = G.STATES
+        local state = G.STATE
+        if not (state == s.SELECTING_HAND or state == s.TAROT_PACK or state == s.SPECTRAL_PACK
+            or state == s.PLANET_PACK or state == s.STANDARD_PACK or state == s.BUFFOON_PACK
+            or (s.SMODS_BOOSTER_OPENED and state == s.SMODS_BOOSTER_OPENED)) then
+            return false
+        end
         if G.view_deck and G.view_deck[1] and G.view_deck[1].cards then return false end
     elseif area.config.type ~= 'joker' then
         return false
@@ -85,6 +93,25 @@ local function card_band(area)
     end
     if y0 > y1 then y0, y1 = area.T.y, area.T.y + area.T.h end
     return y0, y1
+end
+
+-- Bounds of the buttons (SELL, USE, ...) attached to the area's selected cards.
+-- Returns an empty (inverted) box when there are none.
+local function button_bounds(area)
+    local x0, x1, y0, y1 = math.huge, -math.huge, math.huge, -math.huge
+    for _, card in ipairs(area.cards) do
+        if card.highlighted and card.children then
+            for k, child in pairs(card.children) do
+                if type(k) == 'string' and k:find('button') and type(child) == 'table' and child.T then
+                    x0 = math.min(x0, child.T.x)
+                    x1 = math.max(x1, child.T.x + child.T.w)
+                    y0 = math.min(y0, child.T.y)
+                    y1 = math.max(y1, child.T.y + child.T.h)
+                end
+            end
+        end
+    end
+    return x0, x1, y0, y1
 end
 
 -- Gaps between consecutive cards with the extra room centered on continuous index f
@@ -147,6 +174,7 @@ local gaps_buf = {}
 
 local function deactivate(area, st)
     st.active = false
+    st.focus = nil
     if WH.current == area then WH.current = nil end
 end
 
@@ -160,6 +188,13 @@ function WH.apply(area, key, order_before)
     if not cx or not can_activate(area, key) then return deactivate(area, st) end
     if WH.current and WH.current ~= area and state_of(WH.current).active then
         return deactivate(area, st)
+    end
+    -- Don't expand while another area is still collapsing: both would be drawn on top and
+    -- their order would flip in a single frame when the old one finishes (a visible blink).
+    if not st.active then
+        for other, ost in pairs(WH.states) do
+            if other ~= area and ost.draw_on_top then return deactivate(area, st) end
+        end
     end
 
     local normal_gap = (area.T.w - cw)/math.max(n - 1, 1)
@@ -179,10 +214,15 @@ function WH.apply(area, key, order_before)
     local y0, y1 = card_band(area)
 
     -- hover test: enter through the normal area, stay while inside the current one
+    -- (including SELL/USE buttons of selected cards, which stick out of the area)
     local pad = cfg.hover_pad
     local inside
+    local bx0, bx1, by0, by1 = button_bounds(area)
+    local on_button = cx >= bx0 and cx <= bx1 and cy >= by0 and cy <= by1
     if st.active then
-        inside = cx >= x0 - pad and cx <= x0 + w + pad and cy >= y0 - pad and cy <= y1 + pad
+        local zx0, zx1 = math.min(x0, bx0), math.max(x0 + w, bx1)
+        local zy0, zy1 = math.min(y0, by0), math.max(y1, by1)
+        inside = cx >= zx0 - pad and cx <= zx1 + pad and cy >= zy0 - pad and cy <= zy1 + pad
     else
         inside = cx >= area.T.x and cx <= area.T.x + area.T.w and cy >= y0 and cy <= y1
     end
@@ -195,7 +235,12 @@ function WH.apply(area, key, order_before)
         for i, card in ipairs(order_before) do area.cards[i] = card end
     end
 
-    local f = shift and solve_focus(n, x0, w - cw, cw, cx, gaps_buf) or nil
+    -- the buttons move with their card, so freeze the magnifier while one is hovered
+    local f
+    if shift then
+        f = (on_button and st.focus) or solve_focus(n, x0, w - cw, cw, cx, gaps_buf)
+        st.focus = f
+    end
 
     local gaps = compute_gaps(n, w - cw, f, cw, gaps_buf)
     local x = x0
@@ -268,16 +313,41 @@ local function draw_area_on_top(area, st)
     love.graphics.pop()
 end
 
+-- True while any card of the area is still sliding towards its target position.
+local function cards_moving(area)
+    for _, card in ipairs(area.cards) do
+        if math.abs(card.VT.x - card.T.x) > 0.02 or math.abs(card.VT.y - card.T.y) > 0.02 then
+            return true
+        end
+    end
+    return false
+end
+
 function WH.draw_on_top()
     WH.patch_ok = true
     local dt = G.real_dt or 0
     for area, st in pairs(WH.states) do
         st.fade = st.active and math.min(1, st.fade + dt*8) or math.max(0, st.fade - dt*6)
-        st.draw_on_top = (st.active or st.fade > 0) and area_key(area) ~= nil and not area.REMOVED
+        -- after collapsing, stay on top until the cards are back in place; dropping to the
+        -- normal draw order mid-slide makes them blink under the neighbouring areas
+        if st.active or st.fade > 0 then
+            st.settling, st.settle_t = true, 0
+        elseif st.settling then
+            st.settle_t = st.settle_t + dt
+            if st.settle_t > 1.5 or not cards_moving(area) then st.settling = false end
+        end
+        -- The normal CardArea loop already ran this frame using last frame's flag, so an
+        -- area dropping off the top layer right now was skipped there: draw it here once
+        -- more, otherwise it vanishes for a frame.
+        st.skipped_this_frame = st.draw_on_top
+        st.draw_on_top = (st.active or st.fade > 0 or st.settling) and area_key(area) ~= nil and not area.REMOVED
     end
     -- fading-out areas first, the currently expanded one last (on top, first for hover)
     for area, st in pairs(WH.states) do
-        if st.draw_on_top and area ~= WH.current and not area.parent then draw_area_on_top(area, st) end
+        if (st.draw_on_top or st.skipped_this_frame) and area ~= WH.current and not area.parent
+            and not area.REMOVED then
+            draw_area_on_top(area, st)
+        end
     end
     local cur = WH.current
     if cur and WH.states[cur] and WH.states[cur].draw_on_top and not cur.parent then
